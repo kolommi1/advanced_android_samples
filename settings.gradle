@@ -1,0 +1,4 @@
+include ':app:object_visualization'
+include ':app:camera_calibration'
+
+rootProject.name = "Advanced android samples"
