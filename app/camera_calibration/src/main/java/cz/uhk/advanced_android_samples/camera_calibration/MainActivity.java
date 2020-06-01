@@ -1,7 +1,6 @@
 package cz.uhk.advanced_android_samples.camera_calibration;
 import android.os.Bundle;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,7 +31,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
@@ -89,23 +87,23 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         String[] permissions = new String [] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         boolean displayDialog= false;
 
-        for (int i=0; i<permissions.length;i++){
+        for (String permission : permissions) {
             // chybějící oprávnění
-            if ( ContextCompat.checkSelfPermission( this, permissions[i] ) != PackageManager.PERMISSION_GRANTED ) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
 
-                Log.i(TAG, "Chybí práva: " + permissions[i]);
+                Log.i(TAG, "Chybí práva: " + permission);
                 // oprávnění požadováno poprvé nebo bylo odmítnuto se zaškrtnutou možností "Do not ask again"
-                if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permissions[i])) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
                     boolean firstTimeRequest;
                     SharedPreferences sp = getSharedPreferences("AAS_calibration_prefferences", Activity.MODE_PRIVATE);
-                    firstTimeRequest = sp.getBoolean("firstTimeRequest"+permissions[i], true);
+                    firstTimeRequest = sp.getBoolean("firstTimeRequest" + permission, true);
                     // první požadavak
-                    if(firstTimeRequest) {
-                        neededPermissions.add(permissions[i]);
+                    if (firstTimeRequest) {
+                        neededPermissions.add(permission);
                         sp = getSharedPreferences("AAS_calibration_prefferences", Activity.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sp.edit();
-                        editor.putBoolean("firstTimeRequest"+permissions[i], false);
-                        editor.commit();
+                        editor.putBoolean("firstTimeRequest" + permission, false);
+                        editor.apply();
                     }
                     // požadavek odmítnut s možností "Do no ask again"
                     else {
@@ -114,21 +112,21 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
                     }
                 }
                 // požadavek byl dříve odmítnut
-                else{
-                    neededPermissions.add(permissions[i]);
+                else {
+                    neededPermissions.add(permission);
                 }
 
                 // vyslání požadavku na všechna odmítnutá práva
-                if(!neededPermissions.isEmpty()){
+                if (!neededPermissions.isEmpty()) {
                     String[] perms = new String[neededPermissions.size()];
                     for (int j = 0; j < neededPermissions.size(); j++) {
                         perms[j] = neededPermissions.get(j);
                     }
-                    ActivityCompat.requestPermissions(MainActivity.this, perms,1000);
+                    ActivityCompat.requestPermissions(MainActivity.this, perms, 1000);
                 }
 
                 // zobrazení dialogu odkazující do nastavení aplikace
-                if(displayDialog){
+                if (displayDialog) {
                     ad = new AlertDialog.Builder(MainActivity.this).setMessage("Prosím manuálně poskytněte aplikaci požadovaná oprávnění: Kamera, Uložiště ").setPositiveButton("Přejít do nastavení",
                             new DialogInterface.OnClickListener() {
                                 @Override
@@ -316,7 +314,10 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
             // vytvoření souboru
             File calibFile = new File(Environment.getExternalStorageDirectory().toString(), "calibrationParams.txt");
             if(!calibFile.exists()) {
-                calibFile.createNewFile();
+                boolean fileCreated = calibFile.createNewFile();
+                if(!fileCreated) {
+                    Log.e(TAG, "Došlo k chybě při vytváření souboru " + calibFile);
+                }
             }
 
             // zapís matic do souboru (jeden řádek = jedna matice)

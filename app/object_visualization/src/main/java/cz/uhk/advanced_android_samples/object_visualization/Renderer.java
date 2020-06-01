@@ -17,7 +17,6 @@ import cz.uhk.advanced_android_samples.object_visualization.transforms.Vec3D;
 public class Renderer implements GLSurfaceView.Renderer {
 
     private MainActivity mainActivity;
-    private int width, height;
     private int supportedOpenGLESVersion;
     private OGLBuffers buffers;
     private int shaderProgram, locationVPMat, locationTranslation;
@@ -130,8 +129,6 @@ public class Renderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
-        this.width = width;
-        this.height = height;
         // nastavení viewportu
         GLES20.glViewport(0, 0, width, height);
         proj = new Mat4PerspRH(Math.PI / 4, height / (double) width, 0.01, 1000.0);
