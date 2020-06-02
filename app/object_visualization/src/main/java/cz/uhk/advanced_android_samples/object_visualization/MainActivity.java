@@ -35,10 +35,10 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import cz.uhk.advanced_android_samples.object_visualization.transforms.Mat4;
+import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
 
 public class MainActivity extends Activity implements OnTouchListener {
-    private static final String  TAG = "f";
+    private static final String TAG = "AAS_objectVisualization";
 
     private CameraBridgeViewBase viewOpenCv;
     private MyGLSurfaceView viewOpenGL;

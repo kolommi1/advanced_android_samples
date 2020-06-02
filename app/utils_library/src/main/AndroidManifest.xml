@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="cz.uhk.advanced_android_samples.utils_library">
+
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+</manifest>

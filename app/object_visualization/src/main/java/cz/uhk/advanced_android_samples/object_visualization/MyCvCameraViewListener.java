@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.uhk.advanced_android_samples.object_visualization.transforms.Mat4;
+import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
 
 import static org.opencv.aruco.Aruco.DICT_4X4_50;
 import static org.opencv.aruco.Aruco.getPredefinedDictionary;

@@ -13,7 +13,9 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/app/camera_calibration" />
+            <option value="$PROJECT_DIR$/app/cardboard_stereo_view" />
             <option value="$PROJECT_DIR$/app/object_visualization" />
+            <option value="$PROJECT_DIR$/app/utils_library" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

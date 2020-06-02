@@ -6,13 +6,13 @@ import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import cz.uhk.advanced_android_samples.object_visualization.oglutils.OGLBuffers;
-import cz.uhk.advanced_android_samples.object_visualization.oglutils.OGLUtils;
-import cz.uhk.advanced_android_samples.object_visualization.oglutils.ShaderUtils;
-import cz.uhk.advanced_android_samples.object_visualization.oglutils.ToFloatArray;
-import cz.uhk.advanced_android_samples.object_visualization.transforms.Mat4;
-import cz.uhk.advanced_android_samples.object_visualization.transforms.Mat4PerspRH;
-import cz.uhk.advanced_android_samples.object_visualization.transforms.Vec3D;
+import cz.uhk.advanced_android_samples.utils_library.oglutils.OGLBuffers;
+import cz.uhk.advanced_android_samples.utils_library.oglutils.OGLUtils;
+import cz.uhk.advanced_android_samples.utils_library.oglutils.ShaderUtils;
+import cz.uhk.advanced_android_samples.utils_library.oglutils.ToFloatArray;
+import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
+import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4PerspRH;
+import cz.uhk.advanced_android_samples.utils_library.transforms.Vec3D;
 
 public class Renderer implements GLSurfaceView.Renderer {
 
