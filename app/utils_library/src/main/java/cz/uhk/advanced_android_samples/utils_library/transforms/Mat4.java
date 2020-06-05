@@ -67,6 +67,19 @@ public class Mat4 {
 	}
 
 	/**
+	 * Creates a 4x4 double matrix row-wise from a 16-element array of floats
+	 *
+	 * @param m
+	 *            float array of length 16 (asserted)
+	 */
+	public Mat4(final float[] m) {
+		assert(m.length >= 16);
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				mat[i][j] = m[i * 4 + j];
+	}
+
+	/**
 	 * Creates a 4x4 matrix by filling a 3x3 submatrix of an identity 4x4 matrix
 	 * from the given 3x3 matrix
 	 * 
