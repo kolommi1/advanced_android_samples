@@ -1,3 +1,4 @@
+include ':app:room_visualization'
 include ':app:utils_library'
 include ':app:cardboard_stereo_view'
 include ':app:object_visualization'
