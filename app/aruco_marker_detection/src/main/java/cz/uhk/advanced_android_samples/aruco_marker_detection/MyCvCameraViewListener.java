@@ -1,4 +1,4 @@
-package cz.uhk.advanced_android_samples.room_visualization.room_visualization;
+package cz.uhk.advanced_android_samples.aruco_marker_detection;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
@@ -21,11 +21,9 @@ import static org.opencv.aruco.Aruco.DICT_4X4_50;
 import static org.opencv.aruco.Aruco.getPredefinedDictionary;
 
 public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraViewListener2 {
-    private static final String TAG = "AAS_rv_OpenCV";
-    private RoomVisualizationMainActivity mainActivity;
-
-    private Mat cameraFrameRGB;
-    private Mat cameraFrameGray;
+    private static final String TAG = "AAS_ov_OpenCV";
+    private MainActivity mainActivity;
+    private Mat cameraFrameRGB, cameraFrameGray;
     private Dictionary dictionary;
     private Mat cameraMatrix, distCoefs;
     private DetectorParameters parameters;
@@ -37,9 +35,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     private Mat rotation;
     private Mat4 invertMat;
     private Mat4 viewMatrix;
-    private int markerId;
 
-    MyCvCameraViewListener(RoomVisualizationMainActivity mainActivity){
+    MyCvCameraViewListener(MainActivity mainActivity){
         this.mainActivity = mainActivity;
     }
 
@@ -57,8 +54,6 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         }
 
         parameters = DetectorParameters.create();
-        parameters.set_cornerRefinementMethod(0);
-        parameters.set_cornerRefinementMaxIterations(15);
         cameraFrameRGB = new Mat(width,height, CvType.CV_8UC4);
         cameraFrameGray = new Mat(width,height,CvType.CV_8UC1);
         detectedMarkerIds = new Mat();
@@ -66,13 +61,12 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         rejected = new ArrayList<>();
         rotationVectors = new Mat();
         translationVectors = new Mat();
+        camData.clear();
         tvecData = new double[3];
         rvecData = new double[9];
         rotation = new Mat();
         invertMat = new Mat4();
         viewMatrix = new Mat4();
-        markerId = 0;
-        camData.clear();
     }
 
     @Override
@@ -106,11 +100,12 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         if(detectedMarkerIds.cols() > 0) {
             // vykreslení značek
             Aruco.drawDetectedMarkers(cameraFrameRGB, detectedMarkerCorners, detectedMarkerIds, new Scalar(255,255,0));
+
             // nalezen soubor s parametry kamery
             if(distCoefs != null && cameraMatrix != null ){
                 // určení polohy značek z parametrů kamery, šířka markerů při kalibraci 2,2 cm, větší markery 6,4cm
                 Aruco.estimatePoseSingleMarkers(detectedMarkerCorners, 0.064f, cameraMatrix, distCoefs, rotationVectors, translationVectors);
-                detectedMarkerCorners.clear();
+
                 // vykreslení xyz OS pro každou Aruco značku (rvec, tvec obsahují pozici a rotaci všech značek)
                 for(int i = 0; i< rotationVectors.rows(); i++){
                     // submat - získání rotace/pozice jednotlivé značky
@@ -148,25 +143,20 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 invertMat= invertMat.withElement(3, 3,1.0f);
                 // inverze os y a z kvůli nekompatibilitě s OpenGL ES souřadnicovým systémem
                 viewMatrix = invertMat.mul(viewMatrix);
-                int[] temp = new int[detectedMarkerIds.cols()];
-                detectedMarkerIds.get(0,0, temp);
-                markerId = temp[0];
             }
+
             rotation.release();
             rotationVectors.release();
             translationVectors.release();
-            detectedMarkerIds.release();
         }
+        detectedMarkerIds.release();
+        detectedMarkerCorners.clear();
         return cameraFrameRGB;
     }
 
-    // OpenGL ES použivá matice jiném formátu
+    // OpenGL ES použivá matice v jiném formátu
     public Mat4 getViewMatrix(){
         return viewMatrix.transpose();
-    }
-
-    public int getMarkerId(){
-        return markerId;
     }
 
 }
