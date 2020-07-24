@@ -12,6 +12,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/app/aruco_marker_detection" />
             <option value="$PROJECT_DIR$/app/camera_calibration" />
             <option value="$PROJECT_DIR$/app/cardboard_stereo_view" />
             <option value="$PROJECT_DIR$/app/object_visualization" />
