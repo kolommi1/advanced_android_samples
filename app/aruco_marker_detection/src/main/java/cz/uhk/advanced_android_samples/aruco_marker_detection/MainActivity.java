@@ -34,7 +34,7 @@ import androidx.core.content.ContextCompat;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
 
 public class MainActivity extends Activity implements OnTouchListener {
-    private static final String TAG = "AAS_objectVisualization";
+    private static final String TAG = "AAS_markerDetection";
 
     private CameraBridgeViewBase viewOpenCv;
     private MyCvCameraViewListener openCVCameraListener;
@@ -69,12 +69,12 @@ public class MainActivity extends Activity implements OnTouchListener {
                 // oprávnění požadováno poprvé nebo bylo odmítnuto se zaškrtnutou možností "Do not ask again"
                 if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
                     boolean firstTimeRequest;
-                    SharedPreferences sp = getSharedPreferences("AAS_object_visualization_prefferences", Activity.MODE_PRIVATE);
+                    SharedPreferences sp = getSharedPreferences("AAS_marker_detection_prefferences", Activity.MODE_PRIVATE);
                     firstTimeRequest = sp.getBoolean("firstTimeRequest" + permission, true);
                     // první požadavak
                     if (firstTimeRequest) {
                         neededPermissions.add(permission);
-                        sp = getSharedPreferences("AAS_object_visualization_prefferences", Activity.MODE_PRIVATE);
+                        sp = getSharedPreferences("AAS_marker_detection_prefferences", Activity.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putBoolean("firstTimeRequest" + permission, false);
                         editor.apply();

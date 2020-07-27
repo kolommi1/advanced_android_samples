@@ -21,7 +21,7 @@ import static org.opencv.aruco.Aruco.DICT_4X4_50;
 import static org.opencv.aruco.Aruco.getPredefinedDictionary;
 
 public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraViewListener2 {
-    private static final String TAG = "AAS_ov_OpenCV";
+    private static final String TAG = "AAS_amd_OpenCV";
     private MainActivity mainActivity;
     private Mat cameraFrameRGB, cameraFrameGray;
     private Dictionary dictionary;
