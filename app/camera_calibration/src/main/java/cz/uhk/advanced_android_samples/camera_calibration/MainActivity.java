@@ -158,7 +158,6 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
         }
     }
 
-
     @Override
     public void onPause()
     {
@@ -293,7 +292,7 @@ public class MainActivity extends Activity implements OnTouchListener, CvCameraV
             }
             // normální dotyk obrazovky (kratší než 1 vteřinu)
             else{
-                // pokud byli v aktuálním snímku kamery detekovány nějaké Aruco značky -> přidat snímek ke kalibraci
+                // pokud byly v aktuálním snímku kamery detekovány nějaké Aruco značky -> přidat snímek ke kalibraci
                 if(ids.cols() > 0) {
                     Toast.makeText(this, "Snímek uložen", Toast.LENGTH_SHORT).show();
                     allCorners.add(corners);

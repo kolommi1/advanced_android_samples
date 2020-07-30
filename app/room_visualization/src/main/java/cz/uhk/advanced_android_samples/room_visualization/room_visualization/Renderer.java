@@ -55,8 +55,6 @@ public class Renderer implements GLSurfaceView.Renderer {
 
         //zapnutí depth testu
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        // posun krychle kousek nad Aruco značku
-        translation = new Vec3D(0,-1.8,0);
     }
 
     @Override
@@ -69,26 +67,24 @@ public class Renderer implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(locationVPMat, 1, false,
                 ToFloatArray.convert(mainActivity.getViewMatrix().mul(proj)), 0);
 
-        // vzdálenost bodu od počátku [0,0,0]
-        distance = Math.sqrt(Math.pow(mainActivity.getViewMatrix().get(3,0), 2)
-                + Math.pow(mainActivity.getViewMatrix().get(3,1), 2)
-                + Math.pow(mainActivity.getViewMatrix().get(3,2), 2))*10;
 
         // předání pozice objektu shaderu
         if(mainActivity.getMarkerId() == 0){
-            GLES20.glUniform3f(locationTranslation, (float) translation.getX(),(float) translation.getY(),(float) translation.getZ());
+            // posun místnosti (-1.8 vertikální střed místnosti)
+            GLES20.glUniform3f(locationTranslation,0,-2.5f,4);
+            // rotace místnosti
             GLES20.glUniform3f(locationRotation, 0,0,0);
         }
         else if(mainActivity.getMarkerId() == 1){
-            GLES20.glUniform3f(locationTranslation, (float) translation.getX(),(float) translation.getY(),(float) translation.getZ());
+            GLES20.glUniform3f(locationTranslation, -4,-2.5f, 0);
             GLES20.glUniform3f(locationRotation, 0, (float)(90*Math.PI/180), 0);
         }
         else if(mainActivity.getMarkerId() == 2){
-            GLES20.glUniform3f(locationTranslation, (float) translation.getX(),(float) translation.getY(),(float) translation.getZ());
+            GLES20.glUniform3f(locationTranslation, 0,-2.5f,-4);
             GLES20.glUniform3f(locationRotation, 0,  (float)(180*Math.PI/180), 0);
         }
         else {
-            GLES20.glUniform3f(locationTranslation, (float) translation.getX(),(float) translation.getY(),(float) translation.getZ());
+            GLES20.glUniform3f(locationTranslation, 4,-2.5f,0);
             GLES20.glUniform3f(locationRotation, 0, (float)(270*Math.PI/180), 0);
         }
 
@@ -104,7 +100,4 @@ public class Renderer implements GLSurfaceView.Renderer {
         proj = new Mat4PerspRH(Math.PI / 4, height / (double) width, 0.01, 1000.0);
     }
 
-    public double getDistance() {
-        return distance;
-    }
 }

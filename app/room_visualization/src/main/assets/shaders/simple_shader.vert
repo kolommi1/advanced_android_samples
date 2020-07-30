@@ -16,7 +16,7 @@ mat3 rotateY (float w){
 
 void main() {
     // zmenšení krychle, posun o translationMatici
-    vec3 temp = rotateY(rotation.y)* vec3(6.0*(inPosition.x + translation.x), 6.0*(inPosition.y +translation.y), 6.0*(inPosition.z + translation.z));
+    vec3 temp = rotateY(rotation.y)* vec3(4.0*(inPosition.x + translation.x), 4.0*(inPosition.y +translation.y), 4.0*(inPosition.z + translation.z));
     // násobení view a projection maticí
     gl_Position = vpMatrix * vec4(temp, 1.0);
     varTextCoord = inTexCoord;
