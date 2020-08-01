@@ -90,6 +90,7 @@ public class Renderer implements GLSurfaceView.Renderer {
 
         roomTexture.bind(shaderProgram, "textureID", 0);
 
+        // buffers.draw(GLES20.GL_LINES, shaderProgram);
         buffers.draw(roomModel.getTopology(), shaderProgram);
     }
 

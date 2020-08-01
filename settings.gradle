@@ -1,3 +1,4 @@
+include ':app:fantom_cube'
 include ':app:aruco_marker_detection'
 include ':app:room_visualization'
 include ':app:utils_library'

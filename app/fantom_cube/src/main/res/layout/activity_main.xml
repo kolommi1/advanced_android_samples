@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <org.opencv.android.JavaCameraView
+        android:id="@+id/opencv_surface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <cz.uhk.advanced_android_samples.fantom_cube.MyGLSurfaceView
+        android:id="@+id/opengl_surfaceview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>
