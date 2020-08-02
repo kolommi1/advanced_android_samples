@@ -1,10 +1,13 @@
 package cz.uhk.advanced_android_samples.aruco_marker_detection;
 
+import android.util.Log;
+
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -35,6 +38,9 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     private Mat rotation;
     private Mat4 invertMat;
     private Mat4 viewMatrix;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
 
     MyCvCameraViewListener(MainActivity mainActivity){
         this.mainActivity = mainActivity;
@@ -55,7 +61,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
 
         parameters = DetectorParameters.create();
         cameraFrameRGB = new Mat(width,height, CvType.CV_8UC4);
-        cameraFrameGray = new Mat(width,height,CvType.CV_8UC1);
+        cameraFrameGray = new Mat(width,height, CvType.CV_8UC1);
         detectedMarkerIds = new Mat();
         detectedMarkerCorners = new ArrayList<>();
         rejected = new ArrayList<>();
@@ -64,7 +70,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         camData.clear();
         tvecData = new double[3];
         rvecData = new double[9];
-        rotation = new Mat();
+        rotation = new Mat(3,3, CvType.CV_8UC1);
         invertMat = new Mat4();
         viewMatrix = new Mat4();
     }
@@ -73,10 +79,21 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     public void onCameraViewStopped() {
         cameraFrameRGB.release();
         cameraFrameGray.release();
+        cameraMatrix.release();
+        distCoefs.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+            Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
 
         if(cameraFrameGray != null){
             cameraFrameGray.release();
@@ -88,10 +105,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
 
         // detekce probíhá ve stupních šedi
         cameraFrameGray = inputFrame.gray();
-
         // vykreslení značek Aruco vyžaduje rgb obraz
         Imgproc.cvtColor(inputFrame.rgba(), cameraFrameRGB, Imgproc.COLOR_RGBA2RGB, 3);
-
         // detekce aruco značek
         Aruco.detectMarkers(cameraFrameGray, dictionary, detectedMarkerCorners, detectedMarkerIds, parameters, rejected);
         rejected.clear();
@@ -117,11 +132,14 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 // nad prvním detekovaný markerem bude pomocí OpenGL ES vykreslena krychle
                 Mat tempRvec = rotationVectors.submat(new Rect(0,0,1,1));
                 Mat tempTvec = translationVectors.submat(new Rect(0,0,1,1));
-                // získání dat z matice do pole pro lepší manipulaci
-                tempTvec.get(0,0, tvecData);
+                rotationVectors.release();
+                translationVectors.release();
                 // výpočet rotační matice 3x3 z rotačního vektoru
                 Calib3d.Rodrigues(tempRvec, rotation);
+                // získání dat z matice do pole pro lepší manipulaci
+                tempTvec.get(0,0, tvecData);
                 rotation.get(0,0, rvecData);
+                rotation.release();
                 tempRvec.release();
                 tempTvec.release();
 
@@ -144,10 +162,6 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 // inverze os y a z kvůli nekompatibilitě s OpenGL ES souřadnicovým systémem
                 viewMatrix = invertMat.mul(viewMatrix);
             }
-
-            rotation.release();
-            rotationVectors.release();
-            translationVectors.release();
         }
         detectedMarkerIds.release();
         detectedMarkerCorners.clear();
