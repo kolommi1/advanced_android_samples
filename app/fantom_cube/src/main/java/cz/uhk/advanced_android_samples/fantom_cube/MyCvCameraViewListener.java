@@ -11,7 +11,6 @@ import org.opencv.aruco.GridBoard;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -33,16 +32,16 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     private MainActivity mainActivity;
     private Mat cameraFrameRGB, cameraFrameGray;
     private Dictionary dictionary;
-    private GridBoard board;
+    private GridBoard [] boards;
     private Mat cameraMatrix, distCoefs;
     private DetectorParameters parameters;
     private List<Mat> detectedMarkerCorners, rejected;
     private Mat detectedMarkerIds;
-    private Mat rotationVector, translationVector;
+    private Mat[] rotationVectors, translationVectors;
     private Mat rotation;
     private Mat4 invertMat;
     private Mat4 viewMatrix;
-    private int markerId;
+    private int highestIndex;
 
     MyCvCameraViewListener(MainActivity mainActivity){
         this.mainActivity = mainActivity;
@@ -55,8 +54,14 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         // slovník pro detekci Aruco značek
         dictionary = getPredefinedDictionary(DICT_4X4_100);
 
+        boards = new GridBoard[6];
         // Vytvoření Aruco desek 0, 9, 18, 27, 36, 45 pro každou stranu krychle
-        board = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,0);
+        boards[0] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,0);
+        boards[1] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,9);
+        boards[2] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,18);
+        boards[3] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,27);
+        boards[4] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,36);
+        boards[5] = GridBoard.create(3, 3, 0.022f, 0.004f, dictionary,45);
 
         // načtení dat ze souboru vytvořeného při kalibraci kamery
         List<Mat> camData = Tools.readMatFromFile(mainActivity);
@@ -71,8 +76,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         detectedMarkerIds = new Mat();
         detectedMarkerCorners = new ArrayList<>();
         rejected = new ArrayList<>();
-        rotationVector = new Mat();
-        translationVector = new Mat();
+        rotationVectors = new Mat[]{new Mat(), new Mat(), new Mat(), new Mat(), new Mat(), new Mat()};
+        translationVectors = new Mat[]{new Mat(), new Mat(), new Mat(), new Mat(), new Mat(), new Mat()};
         camData.clear();
         rotation = new Mat();
         invertMat = new Mat4();
@@ -84,7 +89,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     public void printArucoBoard(){
 
         Mat boardImage = new Mat();
-        board.draw( new Size(2100, 2970), boardImage, 10, 1 );
+        boards[0].draw( new Size(2100, 2970), boardImage, 10, 1 );
 
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File file = new File(path, "board1.png");
@@ -128,20 +133,29 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         if(detectedMarkerIds.cols() > 0) {
             // vykreslení značek
             Aruco.drawDetectedMarkers(cameraFrameRGB, detectedMarkerCorners, detectedMarkerIds, new Scalar(255,255,0));
-
+            highestIndex = -1;
             // nalezen soubor s parametry kamery
             if(distCoefs != null && cameraMatrix != null ){
                 // určení polohy desek z parametrů kamery a detekovaných značek
-                int detectedBoardMarkers = Aruco.estimatePoseBoard(detectedMarkerCorners, detectedMarkerIds, board, cameraMatrix, distCoefs, rotationVector, translationVector);
+                int[] detectedBoardMarkersArray = new int[6];
+                int highestBoardMarkers = 0;
+                highestIndex = 0;
+                for (int i=0; i<6; i++){
+                    detectedBoardMarkersArray[i] = Aruco.estimatePoseBoard(detectedMarkerCorners, detectedMarkerIds, boards[i], cameraMatrix, distCoefs, rotationVectors[i], translationVectors[i]);
+                    if(detectedBoardMarkersArray[i]>highestBoardMarkers){
+                        highestBoardMarkers = detectedBoardMarkersArray[i];
+                        highestIndex = i;
+                    }
+                }
 
                 // byl detekován alespoň jedna značka z desky
-                if(detectedBoardMarkers > 0) {
+                if(highestBoardMarkers > 0) {
                     // vykreslení xyz OS pro každou Aruco desku (rvec, tvec obsahují pozici a rotaci všech desek)
-                    Aruco.drawAxis(cameraFrameRGB, cameraMatrix, distCoefs, rotationVector, translationVector, 0.04f);
+                    Aruco.drawAxis(cameraFrameRGB, cameraMatrix, distCoefs, rotationVectors[highestIndex], translationVectors[highestIndex], 0.04f);
 
                     // nad první detekovanou deskou bude pomocí OpenGL ES vykreslena krychle
-                    Mat tempRvec = rotationVector;
-                    Mat tempTvec = translationVector;
+                    Mat tempRvec = rotationVectors[highestIndex];
+                    Mat tempTvec = translationVectors[highestIndex];
                     // výpočet rotační matice 3x3 z rotačního vektoru
                     Calib3d.Rodrigues(tempRvec, rotation);
 
@@ -175,20 +189,21 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
             }
 
             rotation.release();
-            rotationVector.release();
-            translationVector.release();
-            markerId = 1;
+            for(int i=0;i<6;i++){
+                rotationVectors[i].release();
+                translationVectors[i].release();
+            }
         }
         else {
-            markerId = 0;
+            highestIndex = -1;
         }
         detectedMarkerIds.release();
         detectedMarkerCorners.clear();
         return cameraFrameRGB;
     }
 
-    public int getMarkerId(){
-        return markerId;
+    public int getHighestIndex(){
+        return highestIndex;
     }
 
     // OpenGL ES použivá matice v jiném formátu

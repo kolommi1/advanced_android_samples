@@ -220,8 +220,8 @@ public class MainActivity extends Activity {
         return openCVCameraListener.getViewMatrix();
     }
 
-    public int getMarkerId(){
-        return openCVCameraListener.getMarkerId();
+    public int getHighestIndex(){
+        return openCVCameraListener.getHighestIndex();
     }
 
 }

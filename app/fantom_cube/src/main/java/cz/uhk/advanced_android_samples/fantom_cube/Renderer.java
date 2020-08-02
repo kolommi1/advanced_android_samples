@@ -12,16 +12,14 @@ import cz.uhk.advanced_android_samples.utils_library.oglutils.ShaderUtils;
 import cz.uhk.advanced_android_samples.utils_library.oglutils.ToFloatArray;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4PerspRH;
-import cz.uhk.advanced_android_samples.utils_library.transforms.Vec3D;
 
 public class Renderer implements GLSurfaceView.Renderer {
 
     private MainActivity mainActivity;
     private int supportedOpenGLESVersion;
     private OGLBuffers buffers;
-    private int shaderProgram, locationVPMat, locationTranslation;
+    private int shaderProgram, locationVPMat, locationTranslation, locationRotation;
     private Mat4 proj;
-    private Vec3D translation;
 
     Renderer(MainActivity mainActivity, int supportedOpenGLESVersion){
         this.supportedOpenGLESVersion = supportedOpenGLESVersion;
@@ -43,11 +41,10 @@ public class Renderer implements GLSurfaceView.Renderer {
 
         locationVPMat = GLES20.glGetUniformLocation(shaderProgram, "vpMatrix");
         locationTranslation = GLES20.glGetUniformLocation(shaderProgram, "translation");
+        locationRotation = GLES20.glGetUniformLocation(shaderProgram, "rotation");
 
         //zapnutí depth testu
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        // posun krychle kousek nad Aruco značku
-        translation = new Vec3D(1f,0.9f,-1f);
     }
 
     private void createBuffers(){
@@ -56,10 +53,10 @@ public class Renderer implements GLSurfaceView.Renderer {
         // každý vrchol 6 hodnot - pozice xyz, barva RGB
         float[] vertexData = {
                 // z-
-                 1, -1, -1,	0, 0, 0,
-                -1, -1, -1,	0, 0, 0,
-                 1,  1, -1,	0, 0, 0,
-                -1,  1, -1,	0, 0, 0,
+                 1, -1, -1,	1, 0, 1,
+                -1, -1, -1, 1, 0, 1,
+                 1,  1, -1, 1, 0, 1,
+                -1,  1, -1,	1, 0, 1,
                 // z+
                  1, -1, 1,	0, 0, 1,
                 -1, -1, 1,	0, 0, 1,
@@ -111,17 +108,47 @@ public class Renderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glUseProgram(shaderProgram);
-        // předání view matice z MainActivity -> OpenGL ES -> shader
-        GLES20.glUniformMatrix4fv(locationVPMat, 1, false,
-                ToFloatArray.convert(mainActivity.getViewMatrix().mul(proj)), 0);
 
-        // předání pozice objektu shaderu
-        GLES20.glUniform3f(locationTranslation, (float) translation.getX(),(float) translation.getY(),(float) translation.getZ());
+        if(mainActivity.getHighestIndex()>=0){
+            // předání view matice z MainActivity -> OpenGL ES -> shader
+            GLES20.glUniformMatrix4fv(locationVPMat, 1, false,
+                    ToFloatArray.convert(mainActivity.getViewMatrix().mul(proj)), 0);
 
-
-        if(mainActivity.getMarkerId() > 0){
-            // vykreslení
-            buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+            GLES20.glUniform3f(locationTranslation, 1f,0.9f,-1f);
+            switch (mainActivity.getHighestIndex()){
+                // FRONT
+                case 0:
+                    // předání rotace objektu do shaderu
+                    GLES20.glUniform3f(locationRotation, 0,  0, 0);
+                    // vykreslení
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+                // LEFT
+                case 1:
+                    GLES20.glUniform3f(locationRotation, 0,  (float)(90*Math.PI/180), 0);
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+                // BACK
+                case 2:
+                    GLES20.glUniform3f(locationRotation, 0,  (float)(180*Math.PI/180), 0);
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+                // RIGHT
+                case 3:
+                    GLES20.glUniform3f(locationRotation, 0,  (float)(270*Math.PI/180), 0);
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+                // TOP
+                case 4:
+                    GLES20.glUniform3f(locationRotation, (float)(+90*Math.PI/180),  0, 0);
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+                // BOTTOM
+                case 5:
+                    GLES20.glUniform3f(locationRotation, (float)(-90*Math.PI/180),  0, 0);
+                    buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
+                    break;
+            }
         }
     }
 
