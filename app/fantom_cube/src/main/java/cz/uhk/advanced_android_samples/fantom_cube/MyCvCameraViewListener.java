@@ -9,6 +9,7 @@ import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.GridBoard;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -179,7 +180,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                     }
                     viewMatrix = viewMatrix.withElement(3, 3,  1.0f);
 
-                    invertMat= invertMat.withElement(0, 0, 1.0f);
+                    // inverze osy X kvůli použití přední kamery
+                    invertMat= invertMat.withElement(0, 0, -1.0f);
                     invertMat= invertMat.withElement(1, 1, -1.0f);
                     invertMat= invertMat.withElement(2, 2, -1.0f);
                     invertMat= invertMat.withElement(3, 3,1.0f);
@@ -199,6 +201,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         }
         detectedMarkerIds.release();
         detectedMarkerCorners.clear();
+        // přední kamera
+        Core.flip(cameraFrameRGB, cameraFrameRGB, 1);
         return cameraFrameRGB;
     }
 

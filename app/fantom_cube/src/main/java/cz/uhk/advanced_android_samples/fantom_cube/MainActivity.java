@@ -54,6 +54,7 @@ public class MainActivity extends Activity {
         // nastavení OpenCV view
         viewOpenCv = findViewById(R.id.opencv_surface_view);
         viewOpenCv.setVisibility(SurfaceView.VISIBLE);
+        viewOpenCv.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
         openCVCameraListener = new MyCvCameraViewListener(this);
         viewOpenCv.setCvCameraViewListener(openCVCameraListener);
 
