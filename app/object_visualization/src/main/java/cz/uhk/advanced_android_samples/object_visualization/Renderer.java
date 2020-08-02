@@ -123,7 +123,6 @@ public class Renderer implements GLSurfaceView.Renderer {
         currentTime = System.currentTimeMillis();
         framesPerSecond += 1;
 
-
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glUseProgram(shaderProgram);

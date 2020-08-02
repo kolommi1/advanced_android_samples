@@ -2,6 +2,7 @@ package cz.uhk.advanced_android_samples.room_visualization.room_visualization;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -14,19 +15,20 @@ import cz.uhk.advanced_android_samples.utils_library.oglutils.ShaderUtils;
 import cz.uhk.advanced_android_samples.utils_library.oglutils.ToFloatArray;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4PerspRH;
-import cz.uhk.advanced_android_samples.utils_library.transforms.Vec3D;
 
 public class Renderer implements GLSurfaceView.Renderer {
 
+    private static final String TAG = "AAS_rv_OpenGL";
     private RoomVisualizationMainActivity  mainActivity;
     private int supportedOpenGLESVersion;
     private OGLBuffers buffers;
     private int shaderProgram, locationVPMat, locationTranslation, locationRotation;
     private Mat4 proj;
-    private Vec3D translation;
-    private double distance;
     private OGLModelOBJ roomModel;
     private OGLTexture2D roomTexture;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
 
     Renderer(RoomVisualizationMainActivity mainActivity, int supportedOpenGLESVersion){
         this.supportedOpenGLESVersion = supportedOpenGLESVersion;
@@ -59,33 +61,45 @@ public class Renderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
+
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+          //  Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
+
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glUseProgram(shaderProgram);
+
         // předání view matice z MainActivity -> OpenGL ES -> shader
         GLES20.glUniformMatrix4fv(locationVPMat, 1, false,
                 ToFloatArray.convert(mainActivity.getViewMatrix().mul(proj)), 0);
 
-
         // předání pozice objektu shaderu
-        if(mainActivity.getMarkerId() == 0){
-            // posun místnosti (-1.8 vertikální střed místnosti)
-            GLES20.glUniform3f(locationTranslation,0,-2.5f,4);
-            // rotace místnosti
-            GLES20.glUniform3f(locationRotation, 0,0,0);
-        }
-        else if(mainActivity.getMarkerId() == 1){
-            GLES20.glUniform3f(locationTranslation, -4,-2.5f, 0);
-            GLES20.glUniform3f(locationRotation, 0, (float)(90*Math.PI/180), 0);
-        }
-        else if(mainActivity.getMarkerId() == 2){
-            GLES20.glUniform3f(locationTranslation, 0,-2.5f,-4);
-            GLES20.glUniform3f(locationRotation, 0,  (float)(180*Math.PI/180), 0);
-        }
-        else {
-            GLES20.glUniform3f(locationTranslation, 4,-2.5f,0);
-            GLES20.glUniform3f(locationRotation, 0, (float)(270*Math.PI/180), 0);
+        switch (mainActivity.getMarkerId()) {
+            case 0:
+                // posun místnosti (-1.8 vertikální střed místnosti)
+                GLES20.glUniform3f(locationTranslation, 0, -2.5f, 4);
+                // rotace místnosti
+                GLES20.glUniform3f(locationRotation, 0, 0, 0);
+                break;
+            case 1:
+                GLES20.glUniform3f(locationTranslation, -4, -2.5f, 0);
+                GLES20.glUniform3f(locationRotation, 0, (float) (90 * Math.PI / 180), 0);
+                break;
+            case 2:
+                GLES20.glUniform3f(locationTranslation, 0, -2.5f, -4);
+                GLES20.glUniform3f(locationRotation, 0, (float) (180 * Math.PI / 180), 0);
+                break;
+            case 3:
+                GLES20.glUniform3f(locationTranslation, 4, -2.5f, 0);
+                GLES20.glUniform3f(locationRotation, 0, (float) (270 * Math.PI / 180), 0);
+                break;
         }
 
         roomTexture.bind(shaderProgram, "textureID", 0);

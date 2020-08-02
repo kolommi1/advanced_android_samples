@@ -1,5 +1,7 @@
 package cz.uhk.advanced_android_samples.room_visualization.room_visualization;
 
+import android.util.Log;
+
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
@@ -37,7 +39,10 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     private Mat rotation;
     private Mat4 invertMat;
     private Mat4 viewMatrix;
-    private int markerId;
+    private int markerId = -1;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
 
     MyCvCameraViewListener(RoomVisualizationMainActivity mainActivity){
         this.mainActivity = mainActivity;
@@ -68,7 +73,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
         translationVectors = new Mat();
         tvecData = new double[3];
         rvecData = new double[9];
-        rotation = new Mat();
+        rotation = new Mat(3,3, CvType.CV_8UC1);
         invertMat = new Mat4();
         viewMatrix = new Mat4();
         markerId = 0;
@@ -79,10 +84,21 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     public void onCameraViewStopped() {
         cameraFrameRGB.release();
         cameraFrameGray.release();
+        cameraMatrix.release();
+        distCoefs.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+       //     Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
 
         if(cameraFrameGray != null){
             cameraFrameGray.release();
@@ -110,7 +126,6 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
             if(distCoefs != null && cameraMatrix != null ){
                 // určení polohy značek z parametrů kamery, šířka markerů při kalibraci 2,2 cm, větší markery 6,4cm
                 Aruco.estimatePoseSingleMarkers(detectedMarkerCorners, 0.064f, cameraMatrix, distCoefs, rotationVectors, translationVectors);
-                detectedMarkerCorners.clear();
                 // vykreslení xyz OS pro každou Aruco značku (rvec, tvec obsahují pozici a rotaci všech značek)
                 for(int i = 0; i< rotationVectors.rows(); i++){
                     // submat - získání rotace/pozice jednotlivé značky
@@ -122,6 +137,8 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 // nad prvním detekovaný markerem bude pomocí OpenGL ES vykreslena krychle
                 Mat tempRvec = rotationVectors.submat(new Rect(0,0,1,1));
                 Mat tempTvec = translationVectors.submat(new Rect(0,0,1,1));
+                rotationVectors.release();
+                translationVectors.release();
                 // získání dat z matice do pole pro lepší manipulaci
                 tempTvec.get(0,0, tvecData);
                 // výpočet rotační matice 3x3 z rotačního vektoru
@@ -129,6 +146,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 rotation.get(0,0, rvecData);
                 tempRvec.release();
                 tempTvec.release();
+                rotation.release();
 
                 // naplnění matice 4x4 - rotační maticí 3x3
                 // 4. sloupec naplněn pozičním vektorem
@@ -152,11 +170,10 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                 detectedMarkerIds.get(0,0, temp);
                 markerId = temp[0];
             }
-            rotation.release();
-            rotationVectors.release();
-            translationVectors.release();
-            detectedMarkerIds.release();
         }
+
+        detectedMarkerCorners.clear();
+        detectedMarkerIds.release();
         return cameraFrameRGB;
     }
 
