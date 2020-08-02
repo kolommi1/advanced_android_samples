@@ -2,6 +2,7 @@ package cz.uhk.advanced_android_samples.object_visualization;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -16,6 +17,7 @@ import cz.uhk.advanced_android_samples.utils_library.transforms.Vec3D;
 
 public class Renderer implements GLSurfaceView.Renderer {
 
+    private static final String TAG = "AAS_ov_OpenGL";
     private MainActivity mainActivity;
     private int supportedOpenGLESVersion;
     private OGLBuffers buffers;
@@ -23,6 +25,9 @@ public class Renderer implements GLSurfaceView.Renderer {
     private Mat4 proj;
     private Vec3D translation;
     private double distance;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
 
     Renderer(MainActivity mainActivity, int supportedOpenGLESVersion){
         this.supportedOpenGLESVersion = supportedOpenGLESVersion;
@@ -109,6 +114,16 @@ public class Renderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+         //   Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
+
+
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glUseProgram(shaderProgram);

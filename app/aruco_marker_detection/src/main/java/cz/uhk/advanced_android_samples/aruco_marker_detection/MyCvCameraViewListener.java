@@ -88,7 +88,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
 
         // reset FPS po každé vteřině
         if (currentTime - prevTime >= 1000) {
-            Log.i(TAG, framesPerSecond + "");
+         //   Log.i(TAG, framesPerSecond + "");
             framesPerSecond = 0;
             prevTime = System.currentTimeMillis();
         }
