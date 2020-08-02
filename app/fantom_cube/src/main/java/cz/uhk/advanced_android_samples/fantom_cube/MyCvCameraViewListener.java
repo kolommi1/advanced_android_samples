@@ -43,6 +43,9 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     private Mat4 invertMat;
     private Mat4 viewMatrix;
     private int highestIndex;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
 
     MyCvCameraViewListener(MainActivity mainActivity){
         this.mainActivity = mainActivity;
@@ -107,10 +110,21 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
     public void onCameraViewStopped() {
         cameraFrameRGB.release();
         cameraFrameGray.release();
+        cameraMatrix.release();
+        distCoefs.release();
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+        //    Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
 
         if(cameraFrameGray != null){
             cameraFrameGray.release();
@@ -139,8 +153,7 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
             if(distCoefs != null && cameraMatrix != null ){
                 // určení polohy desek z parametrů kamery a detekovaných značek
                 int[] detectedBoardMarkersArray = new int[6];
-                int highestBoardMarkers = 0;
-                highestIndex = 0;
+                int highestBoardMarkers = -1;
                 for (int i=0; i<6; i++){
                     detectedBoardMarkersArray[i] = Aruco.estimatePoseBoard(detectedMarkerCorners, detectedMarkerIds, boards[i], cameraMatrix, distCoefs, rotationVectors[i], translationVectors[i]);
                     if(detectedBoardMarkersArray[i]>highestBoardMarkers){
@@ -167,6 +180,11 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                     rotation.get(0,0, rvecData);
                     tempRvec.release();
                     tempTvec.release();
+                    rotation.release();
+                    for(int i=0;i<6;i++){
+                        rotationVectors[i].release();
+                        translationVectors[i].release();
+                    }
 
                     // naplnění matice 4x4 - rotační maticí 3x3
                     // 4. sloupec naplněn pozičním vektorem
@@ -188,12 +206,6 @@ public class MyCvCameraViewListener implements CameraBridgeViewBase.CvCameraView
                     // inverze os y a z kvůli nekompatibilitě s OpenGL ES souřadnicovým systémem
                     viewMatrix = invertMat.mul(viewMatrix);
                 }
-            }
-
-            rotation.release();
-            for(int i=0;i<6;i++){
-                rotationVectors[i].release();
-                translationVectors[i].release();
             }
         }
         else {
