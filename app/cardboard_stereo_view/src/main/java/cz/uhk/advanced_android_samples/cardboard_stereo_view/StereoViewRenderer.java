@@ -1,6 +1,7 @@
 package cz.uhk.advanced_android_samples.cardboard_stereo_view;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.GvrView;
@@ -21,18 +22,20 @@ import cz.uhk.advanced_android_samples.utils_library.transforms.Mat4Transl;
 import cz.uhk.advanced_android_samples.utils_library.transforms.Vec3D;
 
 public class StereoViewRenderer implements GvrView.StereoRenderer  {
-    private static final String TAG = "AAS_sv_renderer";
+    private static final String TAG = "AAS_sv_OpenGL";
 
     private StereoViewMainActivity mainActivity;
     private int supportedOpenGLESVersion;
 
     private int shaderProgram;
     private int locMVP_Mat;
+    private int framesPerSecond = 0;
+    private long prevTime = 0;
+    private long currentTime = 1000;
     
     private OGLModelOBJ roomModel;
     private OGLBuffers roomBuffers;
     private OGLTexture2D roomTexture;
-
     private Camera camera;
 
     private Mat4 matView;
@@ -47,7 +50,6 @@ public class StereoViewRenderer implements GvrView.StereoRenderer  {
 
     @Override
     public void onSurfaceCreated(EGLConfig eglConfig) {
-
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // kontrola dostupnosti shaderů
@@ -76,7 +78,6 @@ public class StereoViewRenderer implements GvrView.StereoRenderer  {
         roomModel = new OGLModelOBJ(mainActivity, "objects/CubeRoom.obj");
         roomTexture = new OGLTexture2D(mainActivity, "objects/CubeRoom_BakedDiffuse.png");
         roomBuffers = roomModel.getBuffers();
-
     }
 
     @Override
@@ -91,6 +92,16 @@ public class StereoViewRenderer implements GvrView.StereoRenderer  {
 
     @Override
     public void onDrawEye(Eye eye) {
+
+        // reset FPS po každé vteřině
+        if (currentTime - prevTime >= 1000) {
+            //Log.i(TAG, framesPerSecond + "");
+            framesPerSecond = 0;
+            prevTime = System.currentTimeMillis();
+        }
+        currentTime = System.currentTimeMillis();
+        framesPerSecond += 1;
+
         //zapnutí depth testu - google carboard sdk za běhu mění hodnoty některých openGL parametrů
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
