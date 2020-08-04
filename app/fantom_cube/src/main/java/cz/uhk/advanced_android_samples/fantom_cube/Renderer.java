@@ -135,31 +135,37 @@ public class Renderer implements GLSurfaceView.Renderer {
                     // předání rotace objektu do shaderu
                     GLES20.glUniform3f(locationRotation, 0,  0, 0);
                     // vykreslení
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
                 // LEFT
                 case 1:
                     GLES20.glUniform3f(locationRotation, 0,  (float)(90*Math.PI/180), 0);
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
                 // BACK
                 case 2:
                     GLES20.glUniform3f(locationRotation, 0,  (float)(180*Math.PI/180), 0);
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
                 // RIGHT
                 case 3:
                     GLES20.glUniform3f(locationRotation, 0,  (float)(270*Math.PI/180), 0);
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
                 // TOP
                 case 4:
                     GLES20.glUniform3f(locationRotation, (float)(+90*Math.PI/180),  0, 0);
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
                 // BOTTOM
                 case 5:
                     GLES20.glUniform3f(locationRotation, (float)(-90*Math.PI/180),  0, 0);
+                    //buffers.draw(GLES20.GL_LINES, shaderProgram);
                     buffers.draw(GLES20.GL_TRIANGLES, shaderProgram);
                     break;
             }
